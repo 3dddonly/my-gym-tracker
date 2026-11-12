@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GYM TRACKER</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{color-scheme:dark;--bg:#101114;--panel:#191b20;--panel2:#22252c;--line:#30343d;--muted:#9da3af;--text:#f5f6f8;--accent:#b8f36b;--red:#ff7777}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}button{cursor:pointer;border:0}.app{max-width:720px;margin:auto;padding:env(safe-area-inset-top) 16px calc(90px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 14px} .brand{font-size:13px;letter-spacing:2px;font-weight:900}.brand span{color:var(--accent)}.date{font-size:12px;color:var(--muted)}
+h1{font-size:28px;line-height:1.1;margin:8px 0 4px}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0}
+.sub{color:var(--muted);font-size:13px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:16px 0}.stat{background:var(--panel2);border-radius:14px;padding:12px}.stat b{display:block;font-size:23px}.stat small{color:var(--muted);font-size:11px}
+.days{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:14px 0}.day{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:11px 4px;border-radius:12px;font-size:12px}.day.active{border-color:var(--accent);color:var(--accent);background:#222b1c}
+.exercise{border-top:1px solid var(--line);padding:14px 0}.exercise:first-child{border-top:0}.ex-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.ex-meta{color:var(--muted);font-size:12px;margin-top:3px}.tag{font-size:10px;color:var(--accent);background:#29331f;padding:4px 7px;border-radius:20px;white-space:nowrap}
+.set-head,.set-row{display:grid;grid-template-columns:32px 1fr 1fr 34px;gap:7px;align-items:center}.set-head{color:var(--muted);font-size:10px;padding:10px 0 5px}.set-row{margin:5px 0}.set-num{color:var(--muted);font-size:12px;text-align:center}.set-row input{width:100%;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px 7px;text-align:center;outline:none}.set-row input:focus{border-color:var(--accent)}.done{width:32px;height:34px;border-radius:9px;background:var(--panel2);color:var(--muted);font-size:17px}.done.checked{background:var(--accent);color:#18200f}
+.primary{width:100%;background:var(--accent);color:#17200d;padding:14px;border-radius:12px;font-weight:800;margin-top:10px}.secondary{background:var(--panel2);color:var(--text);padding:10px 12px;border:1px solid var(--line);border-radius:10px}.tabs{position:fixed;bottom:0;left:0;right:0;background:#15171cF2;border-top:1px solid var(--line);display:flex;justify-content:center;padding:9px 10px calc(9px + env(safe-area-inset-bottom));backdrop-filter:blur(15px);z-index:5}.tabs button{flex:1;max-width:180px;background:none;color:var(--muted);padding:7px 2px;font-size:11px}.tabs button.active{color:var(--accent)}.tabs span{display:block;font-size:19px;margin-bottom:2px}
+.hidden{display:none!important}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.field{display:flex;flex-direction:column;gap:5px;flex:1}.field label{font-size:11px;color:var(--muted)}.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px}
+.history-item{padding:12px 0;border-top:1px solid var(--line)}.history-item:first-child{border-top:0}.muted{color:var(--muted)}.small{font-size:12px}.bar{height:8px;background:var(--panel2);border-radius:20px;overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;background:var(--accent);width:0}
+canvas{width:100%;height:190px;background:var(--panel2);border-radius:12px}.empty{padding:25px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">MY <span>GYM</span> TRACKER</div><div class="date" id="today"></div></header>
+<section id="workoutView">
+<h1 id="welcome">Let's get stronger.</h1><div class="sub">Tvoj trening. Tvoj tempo. Tvoj napredak.</div>
+<div class="stats">
+ <div class="stat"><b id="weekCount">0/4</b><small>TRENINGA OVE NEDELJE</small></div>
+ <div class="stat"><b id="totalSessions">0</b><small>UKUPNO TRENINGA</small></div>
+ <div class="stat"><b id="bodyWeight">—</b><small>TELESNA TEŽINA</small></div>
+</div>
+<div class="days" id="dayButtons"></div>
+<div class="card">
+ <div class="row"><div><div class="sub" id="dayLabel">UPPER A</div><h2 id="dayTitle">Upper Body A</h2></div><span class="tag" id="progressTag">0% DONE</span></div>
+ <div class="bar"><i id="progressBar"></i></div>
+ <div id="exerciseList"></div>
+ <button class="primary" id="finishBtn">Završi trening</button>
+</div>
+</section>
+<section id="historyView" class="hidden">
+<h1>Istorija</h1><div class="sub">Pregled završenih treninga i ličnih rekorda.</div>
+<div class="card"><h2>Poslednji treninzi</h2><div id="historyList"></div></div>
+<div class="card"><h2>Najbolji rezultati</h2><div id="prs"></div></div>
+</section>
+<section id="progressView" class="hidden">
+<h1>Napredak</h1><div class="sub">Prati kilažu na vežbama i telesnu težinu.</div>
+<div class="card"><h2>Napredak po vežbi</h2><div class="field"><label>Izaberi vežbu</label><select id="exerciseSelect"></select></div><canvas id="chart" width="600" height="250"></canvas><div id="chartNote" class="small muted"></div></div>
+<div class="card"><h2>Telesna težina</h2><div class="row"><div class="field"><label>Unesi težinu (kg)</label><input id="weightInput" type="number" step=".1" placeholder="66.0"></div><button class="secondary" id="saveWeight" style="margin-top:17px">Sačuvaj</button></div><div id="weightHistory" class="small muted" style="margin-top:12px"></div></div>
+</section>
+<section id="settingsView" class="hidden">
+<h1>Podešavanja</h1><div class="sub">Tvoj plan treninga.</div>
+<div class="card"><h2>Nedeljni raspored</h2><p class="small muted">Upper A · Lower A · Upper B · Lower B. Možeš da izabereš dan treninga na početnom ekranu.</p><div class="small">Preporuka: ponedeljak – Upper A, utorak – Lower A, četvrtak – Upper B, petak – Lower B.</div></div>
+<div class="card"><h2>Podaci</h2><button class="secondary" id="exportBtn">Izvezi moje podatke (JSON)</button> <button class="secondary" id="resetBtn">Obriši sve podatke</button></div>
+</section>
+</div>
+<nav class="tabs">
+<button class="active" data-tab="workoutView"><span>🏋️</span>Trening</button>
+<button data-tab="historyView"><span>🗓️</span>Istorija</button>
+<button data-tab="progressView"><span>📈</span>Napredak</button>
+<button data-tab="settingsView"><span>⚙️</span>Podešavanja</button>
+</nav>
+<script>
+const plan=[
+ {id:"upperA",short:"UPPER A",title:"Upper Body A",items:[
+ ["Incline chest press machine",3,10],["Wide chest press machine",3,12],["Butterfly machine",3,12],["Shoulder press machine",3,10],["Lateral raises",3,15],["Triceps pushdown",3,12],["Overhead triceps extension",3,12]]},
+ {id:"lowerA",short:"LOWER A",title:"Lower Body A",items:[
+ ["Leg press",3,10],["Romanian deadlift (RDL)",3,8],["Seated leg curl",3,12],["Leg extension",3,15],["Hip thrust",3,10],["Calf raises",3,15],["Core routine",1,"6 min"]]},
+ {id:"upperB",short:"UPPER B",title:"Upper Body B",items:[
+ ["Lat pulldown",3,10],["Seated cable row",3,12],["Low row machine",3,12],["Reverse butterfly",3,15],["Straight arm pulldown",3,12],["Biceps curl",3,12],["Hammer curl",3,12]]},
+ {id:"lowerB",short:"LOWER B",title:"Lower Body B",items:[
+ ["Kickback machine",3,12],["Seated abduction",3,15],["Romanian deadlift (lighter)",3,8],["Leg press (wide stance)",3,12],["Calf raises",3,15],["Core routine",1,"6 min"]]}
+];
+let db=JSON.parse(localStorage.getItem("gymTrackerData")||'{"logs":[],"weights":[],"drafts":{}}');
+let current=0, activeTab="workoutView";
+const save=()=>localStorage.setItem("gymTrackerData",JSON.stringify(db));
+const $=id=>document.getElementById(id);
+const allExercises=[...new Set(plan.flatMap(p=>p.items.map(x=>x[0])))];
+$("today").textContent=new Date().toLocaleDateString("sr-RS",{weekday:"short",day:"numeric",month:"short"});
+function renderDays(){$("dayButtons").innerHTML=plan.map((p,i)=>`<button class="day ${i===current?"active":""}" data-day="${i}">${p.short}</button>`).join("");document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{current=+b.dataset.day;renderWorkout()})}
+function keyFor(day,ex,set){return `${day.id}|${ex}|${set}`}
+function renderWorkout(){
+ const p=plan[current];$("dayLabel").textContent=p.short;$("dayTitle").textContent=p.title;
+ $("exerciseList").innerHTML=p.items.map(([name,sets,reps],ei)=>{
+  let rows=Array.from({length:sets},(_,si)=>{let d=db.drafts[keyFor(p,name,si)]||{};return `<div class="set-row"><div class="set-num">${si+1}</div><input aria-label="Kilogrami" type="number" step=".5" placeholder="kg" value="${d.kg??""}" data-ex="${ei}" data-set="${si}" data-field="kg"><input aria-label="Ponavljanja" type="text" placeholder="${reps}" value="${d.reps??""}" data-ex="${ei}" data-set="${si}" data-field="reps"><button class="done ${d.done?"checked":""}" data-ex="${ei}" data-set="${si}">${d.done?"✓":"○"}</button></div>`}).join("");
+  return `<div class="exercise"><div class="ex-head"><div><h3>${name}</h3><div class="ex-meta">${sets} serije × ${reps} ${typeof reps==="number"?"ponavljanja":""}</div></div><span class="tag">${sets} SETS</span></div><div class="set-head"><span>SET</span><span>TEŽINA · KG</span><span>PONAVLJANJA</span><span>✓</span></div>${rows}</div>`
+ }).join("");
+ document.querySelectorAll("[data-field]").forEach(inp=>inp.oninput=()=>{let ex=p.items[+inp.dataset.ex][0],k=keyFor(p,ex,+inp.dataset.set);db.drafts[k]??={};db.drafts[k][inp.dataset.field]=inp.value;save()});
+ document.querySelectorAll(".done").forEach(btn=>btn.onclick=()=>{let ex=p.items[+btn.dataset.ex][0],k=keyFor(p,ex,+btn.dataset.set);db.drafts[k]??={};db.drafts[k].done=!db.drafts[k].done;save();renderWorkout()});
+ renderDays();updateProgress();
+}
+function updateProgress(){let p=plan[current],total=p.items.reduce((a,x)=>a+x[1],0),done=0;p.items.forEach(([n,s])=>{for(let i=0;i<s;i++)if(db.drafts[keyFor(p,n,i)]?.done)done++});let pct=Math.round(done/total*100);$("progressTag").textContent=pct+"% DONE";$("progressBar").style.width=pct+"%";$("totalSessions").textContent=db.logs.length;$("weekCount").textContent=weeklyCount()+"/4";$("bodyWeight").textContent=db.weights.length?db.weights.at(-1).kg+" kg":"—"}
+function weeklyCount(){let now=new Date(),m=new Date(now);m.setDate(now.getDate()-((now.getDay()+6)%7));m.setHours(0,0,0,0);return db.logs.filter(l=>new Date(l.date)>=m).length}
+$("finishBtn").onclick=()=>{let p=plan[current],entries=[];p.items.forEach(([name,sets,reps])=>{for(let s=0;s<sets;s++){let d=db.drafts[keyFor(p,name,s)]||{};if(d.kg||d.reps)entries.push({exercise:name,set:s+1,kg:d.kg||"",reps:d.reps||""})}});if(!entries.length&&!confirm("Nisi uneo rezultate. Želiš li ipak da završiš trening?"))return;db.logs.push({day:p.title,date:new Date().toISOString(),entries});p.items.forEach(([n,s])=>{for(let i=0;i<s;i++)delete db.drafts[keyFor(p,n,i)]});save();alert("Trening je sačuvan! Odličan posao 💪");renderWorkout();renderHistory()};
+function renderHistory(){$("historyList").innerHTML=db.logs.length?db.logs.slice().reverse().map(l=>`<div class="history-item"><div class="row"><b>${l.day}</b><span class="small muted">${new Date(l.date).toLocaleDateString("sr-RS")}</span></div><div class="small muted">${l.entries.length} unetih serija</div></div>`).join(""):'<div class="empty">Još nema završenih treninga.</div>';
+ let best={};db.logs.forEach(l=>l.entries.forEach(e=>{if(e.kg&&(!best[e.exercise]||+e.kg>+best[e.exercise].kg))best[e.exercise]=e}));$("prs").innerHTML=Object.keys(best).length?Object.entries(best).map(([n,e])=>`<div class="history-item row"><span>${n}</span><b>${e.kg} kg</b></div>`).join(""):'<div class="empty">Lični rekordi će se pojaviti kada uneseš rezultate.</div>'}
+function renderProgress(){let sel=$("exerciseSelect");if(!sel.options.length)sel.innerHTML=allExercises.map(x=>`<option>${x}</option>`).join("");drawChart();$("weightHistory").textContent=db.weights.length?db.weights.slice(-8).map(w=>`${new Date(w.date).toLocaleDateString("sr-RS")}: ${w.kg} kg`).join("  ·  "):"Još nema unetih merenja."}
+function drawChart(){let name=$("exerciseSelect").value||allExercises[0],points=[];db.logs.forEach(l=>l.entries.filter(e=>e.exercise===name&&e.kg).forEach(e=>points.push({date:new Date(l.date),kg:+e.kg})));let c=$("chart"),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle="#3a3e47";ctx.lineWidth=1;for(let i=1;i<5;i++){let y=i*h/5;ctx.beginPath();ctx.moveTo(35,y);ctx.lineTo(w-15,y);ctx.stroke()}if(!points.length){$("chartNote").textContent="Unesi težine na treninzima da bi se prikazao grafikon.";return}let vals=points.map(p=>p.kg),min=Math.min(...vals)-2,max=Math.max(...vals)+2;if(min===max)max=min+1;ctx.strokeStyle="#b8f36b";ctx.lineWidth=4;ctx.beginPath();points.forEach((p,i)=>{let x=45+i*(w-75)/Math.max(1,points.length-1),y=h-25-(p.kg-min)/(max-min)*(h-55);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();points.forEach((p,i)=>{let x=45+i*(w-75)/Math.max(1,points.length-1),y=h-25-(p.kg-min)/(max-min)*(h-55);ctx.fillStyle="#b8f36b";ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()});$("chartNote").textContent=`${points.length} zabeleženih serija · poslednja: ${points.at(-1).kg} kg`}
+$("exerciseSelect").onchange=drawChart;
+$("saveWeight").onclick=()=>{let v=+$("weightInput").value;if(!v||v<20||v>300)return alert("Unesi ispravnu težinu u kilogramima.");db.weights.push({kg:v,date:new Date().toISOString()});save();$("weightInput").value="";updateProgress();renderProgress()};
+function showTab(id){activeTab=id;["workoutView","historyView","progressView","settingsView"].forEach(x=>$(x).classList.toggle("hidden",x!==id));document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));if(id==="historyView")renderHistory();if(id==="progressView")renderProgress()}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$("exportBtn").onclick=()=>{let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="gym-tracker-backup.json";a.click();URL.revokeObjectURL(a.href)};
+$("resetBtn").onclick=()=>{if(confirm("Da li sigurno želiš da obrišeš sve treninge i merenja?")){db={logs:[],weights:[],drafts:{}};save();renderWorkout();renderHistory();renderProgress()}};
+renderWorkout();renderHistory();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body></html>
